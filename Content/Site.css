@@ -1,0 +1,21 @@
+﻿.body-content {
+    margin-top: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+h2 {
+    font-size: 30px;
+    font-weight: bold;
+    color: white;
+}
+

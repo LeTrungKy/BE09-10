@@ -1,0 +1,13 @@
+﻿@model List<_25DH110424_Lê_Trung_Kỳ_MyStore.Models.Category>
+
+@if (Model != null && Model.Any())
+{
+    <ul>
+        @foreach (var category in Model)
+        {
+            <li>
+                <a href="@Url.Action("ProductList", "Home", new { id = category.CategoryID, area = "" })">@category.CategoryName</a>
+            </li>
+        }
+    </ul>
+}

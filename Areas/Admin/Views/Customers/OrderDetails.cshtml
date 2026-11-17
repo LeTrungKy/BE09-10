@@ -1,0 +1,307 @@
+﻿
+@model _25DH110424_Lê_Trung_Kỳ_MyStore.Models.ViewModel.OrderDetailsVM
+
+@{
+    ViewBag.Title = "Chi tiết đơn hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .order-title {
+        font-size: 36px;
+        font-weight: 300;
+        margin: 20px 0 10px;
+    }
+
+    .order-info-title {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .order-info {
+        width: 100%;
+    }
+
+        .order-info td {
+            padding: 4px 8px;
+            vertical-align: top;
+            font-size: 16px;
+        }
+
+            .order-info td:first-child {
+                font-weight: bold;
+                text-align: right;
+                width: 48%;
+            }
+
+            .order-info td:last-child {
+                text-align: left;
+            }
+
+    .order-products {
+        width: 100%;
+        margin-top: 5px;
+    }
+
+        .order-products th {
+            padding: 12px 8px !important;
+            font-size: 16px;
+        }
+
+        .order-products td {
+            padding: 10px 8px !important;
+            vertical-align: top !important;
+            font-size: 16px;
+        }
+
+    .product-image {
+        width: 125px;
+        height: 190px;
+        object-fit: contain;
+    }
+
+    .product-name {
+        min-width: 180px;
+    }
+
+    .order-buttons {
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+
+        .order-buttons .btn {
+            padding: 10px 16px;
+            font-size: 16px;
+        }
+
+    @@media (max-width: 767px) {
+        .order-info td {
+            font-size: 14px;
+        }
+
+        .order-products {
+            font-size: 13px;
+        }
+
+        .product-image {
+            width: 75px;
+            height: 110px;
+        }
+
+        .order-products-wrapper {
+            overflow-x: auto;
+        }
+    }
+</style>
+
+<div class="container-fluid">
+
+    <h1 class="order-title">CHI TIẾT ĐƠN HÀNG</h1>
+
+    @if (TempData["OrderStatusMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["OrderStatusMessage"]
+        </div>
+    }
+
+    @if (TempData["OrderStatusError"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["OrderStatusError"]
+        </div>
+    }
+
+    <div class="row">
+
+        
+        <div class="col-md-4">
+
+            <div class="order-info-title">
+                THÔNG TIN ĐƠN HÀNG
+            </div>
+
+            <table class="order-info">
+                <tr>
+                    <td>Ngày đặt hàng</td>
+                    <td>
+                        @Model.Order.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Tên khách hàng</td>
+                    <td>
+                        @if (Model.Customer != null)
+                        {
+                            @Html.ActionLink(
+                                     Model.Customer.CustomerName,
+                                     "Details",
+                                     new { id = Model.Customer.CustomerID }
+                                 )
+                        }
+                        else
+                        {
+                            <span>Không có thông tin</span>
+                        }
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Tổng giá trị</td>
+                    <td>
+                        @string.Format("{0:N0} đ", Model.Order.TotalAmount)
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Phương thức thanh toán</td>
+                    <td>@Model.Order.PaymentMethod</td>
+                </tr>
+
+                <tr>
+                    <td>Trạng thái thanh toán</td>
+                    <td>@Model.Order.PaymentStatus</td>
+                </tr>
+
+                <tr>
+                    <td>Phương thức giao hàng</td>
+                    <td>@Model.Order.DeliveryMethod</td>
+                </tr>
+
+                <tr>
+                    <td>Địa chỉ giao hàng</td>
+                    <td>@Model.Order.ShippingAddress</td>
+                </tr>
+
+                <tr>
+                    <td>Trạng thái đơn hàng</td>
+                    <td>
+                        @using (Html.BeginForm(
+                            "UpdateOrderStatus",
+                            "Customers",
+                            FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="id"
+                                   value="@Model.Order.OrderID" />
+
+                            <select name="status"
+                                    class="form-control"
+                                    style="margin-bottom:8px;">
+
+                                @foreach (var s in
+                                    _25DH110424_Lê_Trung_Kỳ_MyStore.Models.OrderStatuses.All)
+                                {
+                                    <option value="@s"
+                                            @(s == Model.Order.OrderStatus ? "selected" : "")>
+                                        @s
+                                    </option>
+                                }
+                            </select>
+
+                            <button type="submit"
+                                    class="btn btn-primary btn-sm">
+                                Cập nhật
+                            </button>
+                        }
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+        
+        <div class="col-md-8">
+
+            <div class="order-products-wrapper">
+
+                <table class="table order-products">
+
+                    <thead>
+                        <tr>
+                            <th colspan="2">Sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+
+                                <td style="width: 150px; text-align:center;">
+
+                                    @if (item.Product != null)
+                                    {
+                                        <img src="@Url.Content(
+                                            string.IsNullOrEmpty(item.Product.ProductImage)
+                                            ? "~/Content/images/default_img.png"
+                                            : item.Product.ProductImage)"
+                                             alt="Ảnh sản phẩm"
+                                             class="product-image" />
+                                    }
+
+                                </td>
+
+                                <td class="product-name">
+                                    @(item.Product != null
+                                        ? item.Product.ProductName
+                                        : "(sản phẩm đã bị xóa)")
+                                </td>
+
+                                <td>@item.Quantity</td>
+
+                                <td>
+                                    @string.Format("{0:N0}", item.UnitPrice)
+                                </td>
+
+                                <td>
+                                    @string.Format(
+                                             "{0:N0}",
+                                             item.Quantity * item.UnitPrice
+                                         )
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    
+    <div class="order-buttons">
+
+        @if (Model.Customer != null)
+        {
+            @Html.ActionLink(
+                     "Quay lại đơn hàng của khách",
+                     "Details",
+                     new { id = Model.Customer.CustomerID },
+                     new { @class = "btn btn-primary" }
+                 )
+        }
+
+        @Html.ActionLink(
+                 "Danh sách khách hàng",
+                 "Index",
+                 null,
+                 new { @class = "btn btn-primary" }
+             )
+
+    </div>
+
+</div>
+
